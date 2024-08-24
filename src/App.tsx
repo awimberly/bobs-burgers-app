@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { Container, Button, CircularProgress, Grid, Typography } from '@mui/material';
 import CharacterCard from './components/CharacterCard';
@@ -6,6 +6,7 @@ import { Card } from './interfaces/Card';
 import './App.css'; 
 
 const BOBS_BURGER_ENDPOINT = 'https://bobsburgers-api.herokuapp.com/characters';
+const BOBS_BURGER_THEME_URL = 'https://www.televisiontunes.com/uploads/audio/Bobs%20Burgers.mp3';
 
 const App: React.FC = () => {
   const [gridSize, setGridSize] = useState(4); // Default to 4x4
@@ -13,6 +14,9 @@ const App: React.FC = () => {
   const [flippedCards, setFlippedCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true); // Add loading state
   const [gameWon, setGameWon] = useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+
+  const audioRef = useRef<HTMLAudioElement>(null); // Reference to the audio element
 
   useEffect(() => {
     if (gridSize) {
@@ -102,15 +106,28 @@ const App: React.FC = () => {
     }
   };
 
-  console.log("game won", gameWon);
+  const toggleAudio = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   return (
     <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', minHeight: '100vh' }}>
+      <audio ref={audioRef} src={BOBS_BURGER_THEME_URL} loop />
       <div className="grid-buttons">
         <Button variant="contained" onClick={() => handleGridSizeChange(4)}>4x4</Button>
         <Button variant="contained" onClick={() => handleGridSizeChange(6)}>6x6</Button>
         <Button variant="contained" onClick={() => handleGridSizeChange(8)}>8x8</Button>
       </div>
+      <Button className="music-button" variant="contained" sx={{ marginTop: 2 }} onClick={toggleAudio}>
+        {isPlaying ? 'Stop Music' : 'Play Music'}
+      </Button>
       {loading ? (
         <CircularProgress />
       ) : (
